@@ -8,8 +8,11 @@ public class ProcessUnit {
     static protected DatagramSocket socket;
     static protected byte ID;
     static protected Vector<Pair<Byte, InetAddress>> addresses;
-
     static protected Vector<PacketInfo> log;
+
+    static protected PipedOutputStream input;
+
+
     public ProcessUnit(String addr, String[] neighbours) {
         try {
             // Criação do socket
@@ -31,19 +34,34 @@ public class ProcessUnit {
 
             log = new Vector<>();
 
-
+            input = new PipedOutputStream();
 
             // Executa a rotina principal
             rodar();
 
-        } catch(SocketException | UnknownHostException e){
+        } catch(IOException e){
             throw new RuntimeException(e);
         }
     }
 
-    protected static void log(PacketInfo msg)
-    {
-         log.add(msg);
+    public static void end() { socket.close();}
+
+    public static byte getID() { return ID; }
+    public static Vector<Pair<Byte, InetAddress>> getAddresses() { return addresses; }
+    public static InetAddress getAddress() { return socket.getLocalAddress();}
+
+    protected static void log(PacketInfo msg) { log.add(msg); }
+
+    public static Vector<PacketInfo> log() { return log; }
+
+    public static void sendMessage(PacketInfo pInfo){
+        try {
+            ObjectOutputStream writer = new ObjectOutputStream(input);
+            writer.writeObject(pInfo);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        log.add(pInfo);
     }
 
     private void rodar() throws SocketException {
@@ -61,6 +79,13 @@ public class ProcessUnit {
             {
 
                 Scanner keyboard = new Scanner(System.in);
+                // TODO:Implementar sistema de pegar mensagens despachadas pelo usuário
+                try {
+                    ObjectInputStream getter = new ObjectInputStream(new PipedInputStream(input));
+                    PacketInfo obj = (PacketInfo) getter.readObject();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
 
                 while (!socket.isClosed()) {
                     try {
@@ -86,7 +111,7 @@ public class ProcessUnit {
 
                                     try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
 
-                                    pInfo = new PacketInfo(typeMessage.UNICAST,
+                                    pInfo = new PacketInfo(TypeMessage.UNICAST,
                                             socket.getLocalAddress(),
                                             (byte) (1 << (id - 1)),
                                             msg);
@@ -98,7 +123,7 @@ public class ProcessUnit {
                                     // BROADCAST
                                     try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
 
-                                    pInfo = new PacketInfo(typeMessage.BROADCAST,
+                                    pInfo = new PacketInfo(TypeMessage.BROADCAST,
                                             socket.getLocalAddress(),
                                             ID,
                                             msg
@@ -110,7 +135,7 @@ public class ProcessUnit {
                                     break;
                                 case ";":
                                     // DEBUG : LOOP PELA REDE
-                                    pInfo = new PacketInfo(typeMessage.UNICAST,
+                                    pInfo = new PacketInfo(TypeMessage.UNICAST,
                                             socket.getLocalAddress(),
                                             (byte) 255,
                                             "Debug > Loop");
@@ -123,7 +148,7 @@ public class ProcessUnit {
                             // MULTICAST
                             try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
 
-                            pInfo = new PacketInfo(typeMessage.MULTICAST,
+                            pInfo = new PacketInfo(TypeMessage.MULTICAST,
                                     socket.getLocalAddress(),
                                     ID,
                                     msg

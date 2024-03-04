@@ -12,24 +12,28 @@ import org.projApplication.controller.MainController;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import org.projApplication.process.ProcessUnit;
 
 public class MainApplication extends Application {
     protected static String msg;
+
+    public static ProcessUnit instanceProcessUnit;
 
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("hello-view.fxml"));
 
-        final Label[][] calmaJaVai = new Label[1][1];
+        final Label[][] UserLabels = new Label[1][1];
 
-        // TODO: Esse objeto aqui vai ser a instancia de Processo que vou importar daqui a pouco
         final String[] instancia = {msg};
+
         fxmlLoader.setControllerFactory(type -> {
             try {
-                Constructor<?> constructor = type.getConstructor(String.class);
-                MainController instance = (MainController) constructor.newInstance(instancia[0]);
+                Constructor<?> constructor = type.getConstructor(ProcessUnit.class);
+                MainController instance = (MainController) constructor.newInstance(instanceProcessUnit);
                 stage.addEventHandler(KeyEvent.KEY_PRESSED, instance::handleKeyboardInput);
-                calmaJaVai[0] = instance.createUsers();
+                UserLabels[0] = instance.createUsers();
+                System.out.println(UserLabels[0][0].getText());
 
                 return instance;
             } catch (Exception exc) {
@@ -41,15 +45,24 @@ public class MainApplication extends Application {
 
         Scene scene = fxmlLoader.load();
 
-//        ((AnchorPane)((HBox)scene.getRoot()).getChildren().get(1)).getChildren().addAll(calmaJaVai[0]);
+        var UserPane = ((HBox)scene.getRoot()).getChildren();
 
-        var opa = ((HBox)scene.getRoot()).getChildren();
-        ((AnchorPane)opa.get(1)).getChildren().addAll(calmaJaVai[0]);
+        //TODO:tirar esse for daq...
+        for(Label e : UserLabels[0])
+            ((AnchorPane)UserPane.get(1)).getChildren().add(e);
+
+
         stage.setTitle("Prática Off-01");
-
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+    }
+
+    //TODO:Testar se isso aq funciona
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        ProcessUnit.end();
     }
 
     public static void main(String[] args) {

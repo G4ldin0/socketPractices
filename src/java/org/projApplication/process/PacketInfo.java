@@ -8,12 +8,12 @@ import java.net.InetAddress;
 public class PacketInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = 3275063138377064310L;
-    protected typeMessage type;
+    protected TypeMessage type;
     protected InetAddress source;
     protected byte destID;
     protected String message;
 
-    public PacketInfo(typeMessage t, InetAddress s, byte d, String m)
+    public PacketInfo(TypeMessage t, InetAddress s, byte d, String m)
      {
          type = t;
          source = s;
@@ -29,5 +29,19 @@ public class PacketInfo implements Serializable {
         boolean id = destID == p.destID;
         boolean m = message.equals(p.message);
         return t && s && id && m;
+    }
+
+    public boolean isBroadCast() {return type == TypeMessage.BROADCAST; }
+
+    public InetAddress getSource() {
+        return source;
+    }
+
+    public byte getDestID() {
+        return destID;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

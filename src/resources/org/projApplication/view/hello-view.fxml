@@ -18,7 +18,7 @@
                   <AnchorPane layoutX="10.0" layoutY="340.0" prefHeight="44.0" prefWidth="470.0">
                      <children>
                         <ChoiceBox fx:id="typeMessage" layoutY="9.0" prefHeight="26.0" prefWidth="111.0" />
-                        <TextField fx:id="id" disable="true" layoutX="122.0" layoutY="9.0" minWidth="50.0" prefHeight="26.0" prefWidth="0.0" />
+                        <TextField fx:id="id" disable="true" editable="false" layoutX="122.0" layoutY="9.0" minWidth="50.0" prefHeight="26.0" prefWidth="0.0" />
                         <TextField fx:id="text" alignment="TOP_LEFT" layoutX="185.0" layoutY="9.0" maxWidth="1.7976931348623157E308" minWidth="100.0" onAction="#getValues" prefHeight="26.0" prefWidth="250.0" />
                       <Button layoutX="441.0" layoutY="7.0" minWidth="53.0" mnemonicParsing="false" onAction="#getValues" prefHeight="30.0" prefWidth="53.0" text="&gt;" />
                      </children>

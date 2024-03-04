@@ -1,5 +1,5 @@
 package org.projApplication.process;
 
-public enum typeMessage {
+public enum TypeMessage {
     MULTICAST, UNICAST, BROADCAST
 }
