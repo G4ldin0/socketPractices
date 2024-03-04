@@ -34,31 +34,33 @@ public class MainController implements Initializable {
     @FXML
     ListView<PacketInfo> chatMessages;
 
+    @FXML
+    ObservableList<PacketInfo> teste;
     ProcessUnit instanceProcessUnit;
-    //TODO: talvez não seja preciso guardar essa variável
-    ObservableList<PacketInfo> logMessages;
     private final String[] msgTypes = {"Unicast", "BroadCast"};
 
     public MainController(ProcessUnit processUnit)
     {
         instanceProcessUnit = processUnit;
-        logMessages = FXCollections.observableList(ProcessUnit.log());
     }
 
     @FXML
     protected void getValues()
     {
         if(!text.getCharacters().isEmpty()) {
+
             TypeMessage t = id.isDisabled() ? TypeMessage.BROADCAST : TypeMessage.UNICAST;
+
             byte destiny = ProcessUnit.getID();
             if (t.equals(TypeMessage.UNICAST)) destiny = Byte.parseByte(id.getCharacters().toString());
+
             String msg = text.getCharacters().toString();
 
-            PacketInfo pkg = new PacketInfo(t, ProcessUnit.getAddress(), destiny, msg);
-//            ProcessUnit.sendMessage(pkg);
 
-            logMessages.add(pkg);
-            System.out.println(logMessages.get(logMessages.size() - 1).getMessage());
+            PacketInfo pkg = new PacketInfo(t, ProcessUnit.getAddress(), destiny, msg);
+            ProcessUnit.sendMessage(pkg);
+
+
             text.clear();
             chatMessages.scrollTo(chatMessages.getItems().size());
         }
@@ -67,12 +69,13 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        chatMessages.setItems(logMessages);
+        chatMessages.setItems(ProcessUnit.log());
         chatMessages.setCellFactory(type -> new MessageCell());
 
-        for(String e : msgTypes) typeMessage.getItems().add(e);
+        typeMessage.getItems().addAll(msgTypes);
 
         typeMessage.setValue(msgTypes[1]);
+        id.setText(String.valueOf(ProcessUnit.getAddresses().get(0).r().getAddress()[3]));
 
         typeMessage.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -96,33 +99,35 @@ public class MainController implements Initializable {
         }
     }
 
-    public Label[] createUsers()
-    {
-        Vector<Label> calma = new Vector<>();
+    public Label[] createUsers(){
+        Vector<Label> ArrayConstructor = new Vector<>();
 
-        Vector<Pair<Byte, InetAddress>> addresses = ProcessUnit.getAddresses();
-        for(int i = 0; i < addresses.size() - 1; i++) {
-            byte e = addresses.get(i).l();
-            Label newLabel = new Label("Cliente " + e);
-            newLabel.setId(String.valueOf(i == addresses.size()-1 ?  ProcessUnit.getID() : e));
-            newLabel.setLayoutY(15.0 + 30.0 * i);
-            newLabel.setLayoutX(15.0);
-            newLabel.setPrefWidth(170.0);
-            newLabel.setCursor(Cursor.HAND);
-            newLabel.setOnMouseClicked(event -> {
-                        if (event.getButton().equals(MouseButton.PRIMARY)) {
-                            typeMessage.setValue(msgTypes[0]);
-                            id.setText(((Node)event.getSource()).getId());
+        byte myId = ProcessUnit.getID();
+
+        int count = 0;
+        for(int i = 1; i <= 4; i++) {
+            if(i != myId){
+                Label newLabel = new Label("Cliente " + i);
+                newLabel.setId(String.valueOf( 1 << ( i - 1 )));
+                newLabel.setLayoutY(15.0 + 30.0 * count);
+                newLabel.setLayoutX(15.0);
+                newLabel.setPrefWidth(170.0);
+                newLabel.getStyleClass().add("Button");
+                newLabel.setCursor(Cursor.HAND);
+                newLabel.setOnMouseClicked(event -> {
+                            if (event.getButton().equals(MouseButton.PRIMARY)) {
+                                typeMessage.setValue(msgTypes[0]);
+                                id.setText(((Node)event.getSource()).getId());
+                            }
                         }
-                    }
-            );
-            calma.add(newLabel);
+                );
+                ArrayConstructor.add(newLabel);
+                count++;
+            }
         }
 
-
-
-        Label[] returnArray = new Label[calma.size()];
-        calma.toArray(returnArray);
+        Label[] returnArray = new Label[ArrayConstructor.size()];
+        ArrayConstructor.toArray(returnArray);
         return returnArray;
     }
 

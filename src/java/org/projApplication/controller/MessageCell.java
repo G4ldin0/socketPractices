@@ -1,5 +1,6 @@
 package org.projApplication.controller;
 
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
@@ -10,24 +11,30 @@ import java.util.List;
 
 public class MessageCell extends ListCell<PacketInfo> {
     HBox parent = new HBox();
-    Text from = new Text();
-    Text message = new Text();
+    Label from = new Label();
+    Label message = new Label();
     public MessageCell(){
         parent.getChildren().addAll(from, message);
     }
 
     @Override
     protected void updateItem(PacketInfo msg, boolean b) {
-        super.updateItem(msg, b);
 
         if(msg != null && !b){
-        from.setText(msg.getSource().toString());
+            from.setText("From " + String.valueOf(msg.getSource().getAddress()[3]) + " : ");
+            from.prefWidth(100.0);
 
-        message.setText(msg.getMessage());
-        if(msg.isBroadCast())
-            message.setStyle("-fx-text-fill: red; -fx-alignment: left");
-        setGraphic(parent);
-}
+            from.getStyleClass().add("MessageCell");
+
+            message.setText(msg.getMessage());
+            message.minWidth(parent.getMaxWidth());
+            message.getStyleClass().add("MessageCell");
+
+            setGraphic(parent);
+        }
+
+        super.updateItem(msg, b);
+
 
     }
 

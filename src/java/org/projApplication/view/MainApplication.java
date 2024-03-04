@@ -15,8 +15,6 @@ import java.lang.reflect.Constructor;
 import org.projApplication.process.ProcessUnit;
 
 public class MainApplication extends Application {
-    protected static String msg;
-
     public static ProcessUnit instanceProcessUnit;
 
     @Override
@@ -25,7 +23,6 @@ public class MainApplication extends Application {
 
         final Label[][] UserLabels = new Label[1][1];
 
-        final String[] instancia = {msg};
 
         fxmlLoader.setControllerFactory(type -> {
             try {
@@ -33,7 +30,6 @@ public class MainApplication extends Application {
                 MainController instance = (MainController) constructor.newInstance(instanceProcessUnit);
                 stage.addEventHandler(KeyEvent.KEY_PRESSED, instance::handleKeyboardInput);
                 UserLabels[0] = instance.createUsers();
-                System.out.println(UserLabels[0][0].getText());
 
                 return instance;
             } catch (Exception exc) {
@@ -48,11 +44,12 @@ public class MainApplication extends Application {
         var UserPane = ((HBox)scene.getRoot()).getChildren();
 
         //TODO:tirar esse for daq...
-        for(Label e : UserLabels[0])
-            ((AnchorPane)UserPane.get(1)).getChildren().add(e);
+//        for(Label e : UserLabels[0])
+//            ((AnchorPane)UserPane.get(1)).getChildren().add(e);
+        ((AnchorPane)UserPane.get(1)).getChildren().addAll(UserLabels[0]);
 
 
-        stage.setTitle("Prática Off-01");
+        stage.setTitle("Prática Off-01: Cliente " + ProcessUnit.getAddress().getAddress()[3]);
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
@@ -61,8 +58,8 @@ public class MainApplication extends Application {
     //TODO:Testar se isso aq funciona
     @Override
     public void stop() throws Exception {
-        super.stop();
         ProcessUnit.end();
+        super.stop();
     }
 
     public static void main(String[] args) {

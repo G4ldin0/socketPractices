@@ -1,5 +1,9 @@
 package org.projApplication.process;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -8,13 +12,19 @@ public class ProcessUnit {
     static protected DatagramSocket socket;
     static protected byte ID;
     static protected Vector<Pair<Byte, InetAddress>> addresses;
-    static protected Vector<PacketInfo> log;
+    static protected ObservableList<PacketInfo> log;
 
-    static protected PipedOutputStream input;
+    static PipedInputStream input;
+    static PipedOutputStream output;
 
 
-    public ProcessUnit(String addr, String[] neighbours) {
+    static protected ObjectInputStream getUserInput;
+    static protected ObjectOutputStream userInput;
+
+
+    public ProcessUnit(String addr, String... neighbours) {
         try {
+
             // Criação do socket
             InetAddress myAddr = InetAddress.getByName(addr);
             socket = new DatagramSocket(new InetSocketAddress(myAddr, 5000));
@@ -32,9 +42,19 @@ public class ProcessUnit {
             // Qualquer outro endereço será enviado para o primeiro endereço assinalado
             addresses.add(new Pair<>((byte)255, addresses.get(0).r()));
 
-            log = new Vector<>();
 
-            input = new PipedOutputStream();
+
+            log = FXCollections.observableArrayList();
+
+
+
+            input = new PipedInputStream();
+            output = new PipedOutputStream(input);
+
+
+
+            userInput = new ObjectOutputStream(output);
+
 
             // Executa a rotina principal
             rodar();
@@ -43,21 +63,24 @@ public class ProcessUnit {
             throw new RuntimeException(e);
         }
     }
-
-    public static void end() { socket.close();}
+    public static void end() {
+        socket.close();
+    }
 
     public static byte getID() { return ID; }
     public static Vector<Pair<Byte, InetAddress>> getAddresses() { return addresses; }
     public static InetAddress getAddress() { return socket.getLocalAddress();}
 
-    protected static void log(PacketInfo msg) { log.add(msg); }
+    protected static void log(PacketInfo msg) {
+        Platform.runLater(() -> log.add(msg) );
+    }
 
-    public static Vector<PacketInfo> log() { return log; }
+    public static ObservableList<PacketInfo> log() { return log; }
 
     public static void sendMessage(PacketInfo pInfo){
         try {
-            ObjectOutputStream writer = new ObjectOutputStream(input);
-            writer.writeObject(pInfo);
+            userInput.writeObject(pInfo);
+            userInput.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,97 +95,49 @@ public class ProcessUnit {
         Thread tRec = new Thread(receiveThread); tRec.setDaemon(true);
         tRec.start();
 
-        ProcessSendMessage sendThread = new ProcessSendMessage()
-        {
-        // Tipos de entrada e respectivas ações
+        ProcessSendMessage sendThread = new ProcessSendMessage(){
+            // Tipos de entrada e respectivas ações
             @Override public void run()
             {
 
-                Scanner keyboard = new Scanner(System.in);
-                // TODO:Implementar sistema de pegar mensagens despachadas pelo usuário
                 try {
-                    ObjectInputStream getter = new ObjectInputStream(new PipedInputStream(input));
-                    PacketInfo obj = (PacketInfo) getter.readObject();
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
 
-                while (!socket.isClosed()) {
-                    try {
-                        Scanner message = new Scanner(keyboard.nextLine());
-                        String msg;
+                    getUserInput = new ObjectInputStream(input);
 
-                        PacketInfo pInfo;
+                    while (!socket.isClosed()) {
 
+                        PacketInfo userMessage = (PacketInfo) getUserInput.readObject();
 
-                        // Tipos de entrada e ações equivalentes
-                        if (message.hasNext("/"))
-                        {
-                            System.out.println("Encerrando processo");
-                            message.close();
-                            break;
-                        }
-                        else if (message.hasNext("\\p{Punct}"))
-                        {
-                            switch (message.next()) {
-                                case ".":
-                                    // UNICAST
-                                    byte id = message.nextByte();
+                        System.out.println(userMessage.message);
 
-                                    try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
+                        // Caso envie BroadCast
+                        if(userMessage.isBroadCast())
+                            for(int i = 0; i < addresses.size()-1; i++)
+                                try {
+                                    sendMessage(userMessage, addresses.get(i).r());
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
 
-                                    pInfo = new PacketInfo(TypeMessage.UNICAST,
-                                            socket.getLocalAddress(),
-                                            (byte) (1 << (id - 1)),
-                                            msg);
-
-                                    sendMessage(pInfo);
-
-                                    break;
-                                case "!":
-                                    // BROADCAST
-                                    try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
-
-                                    pInfo = new PacketInfo(TypeMessage.BROADCAST,
-                                            socket.getLocalAddress(),
-                                            ID,
-                                            msg
-                                    );
-
-                                    for(int i = 0; i < addresses.size() - 1; ++i)
-                                        sendMessage(pInfo, addresses.get(i).r());
-
-                                    break;
-                                case ";":
-                                    // DEBUG : LOOP PELA REDE
-                                    pInfo = new PacketInfo(TypeMessage.UNICAST,
-                                            socket.getLocalAddress(),
-                                            (byte) 255,
-                                            "Debug > Loop");
-
-                                    sendMessage(pInfo);
-
-                                    break;
-                            }
-                        } else {
-                            // MULTICAST
-                            try { msg = message.nextLine().trim(); } catch (Exception e) {msg = " ";}
-
-                            pInfo = new PacketInfo(TypeMessage.MULTICAST,
+                        // Caso for mensagem de debug
+                        else if (userMessage.message.equals(";"))
+                            sendMessage(new PacketInfo(
+                                    TypeMessage.UNICAST,
                                     socket.getLocalAddress(),
-                                    ID,
-                                    msg
-                            );
+                                    (byte)16,
+                                    userMessage.getMessage()));
 
-                            for(int i = 0; i < addresses.size() - 1; ++i)
-                                sendMessage(pInfo, addresses.get(i).r());
-                        }
-                    } catch (IOException e) {
-                        keyboard = new Scanner(System.in);
+                        // Caso for UniCast
+                        else
+                            sendMessage(userMessage);
+
                     }
-
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    // Talvez não seja socket fechado
+                    System.out.println("socket fechado.");
                 }
-                keyboard.close();
             }
         };
 

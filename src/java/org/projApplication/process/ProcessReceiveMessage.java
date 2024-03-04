@@ -23,9 +23,10 @@ public class ProcessReceiveMessage implements Runnable {
                 // Recebe pacote
                 ProcessUnit.socket.receive(packet);
 
-                // Deserializa objeto no buffer
+                // De serializa objeto no buffer
                 ObjectInputStream objInput = new ObjectInputStream(new ByteArrayInputStream(packet.getData()));
                 PacketInfo received = (PacketInfo) objInput.readObject();
+
 
                 // Procedimento conforme o tipo de mensagem recebida
                 switch (received.type) {
@@ -42,7 +43,6 @@ public class ProcessReceiveMessage implements Runnable {
     }
 
     private void broadcastMessage(PacketInfo received) throws SocketException {
-
 
     new Thread(
             new ProcessSendMessage() {
@@ -63,6 +63,7 @@ public class ProcessReceiveMessage implements Runnable {
                         // Se não foi recebida, então passa o broadcast adiante
                         if(newMsg) {
                             ProcessUnit.log(received);
+
                             InetAddress source = packet.getAddress();
 
                             // Envia mensagem para todos, exceto para onde foi recebida a mensagem
@@ -90,30 +91,35 @@ public class ProcessReceiveMessage implements Runnable {
     }
 
     private void unicastMessage(PacketInfo received) throws SocketException {
-        ProcessUnit.log(received);
 
         // Se for um loop
         if(received.source.equals( ProcessUnit.socket.getLocalAddress()) )
             System.out.println(received.message);
 
         // Se for uma mensagem enviada para mim
-        else if(received.destID == ProcessUnit.ID)
+        else if(received.destID == ProcessUnit.ID) {
+            ProcessUnit.log(received);
             System.out.println(received.source + ":" + packet.getPort() + " .> " + received.message);
-
+        }
         // Se for uma mensagem para outro endereço
         // Cria uma nova Thread para enviar a mensagem adiante
         else
         {
-
             ProcessSendMessage send = new ProcessSendMessage() {
                 @Override
                 public void run() {
-                    try { sendMessage(received); }
-                    catch (IOException e) { throw new RuntimeException(e); }
+                    try {
+                        sendMessage(received);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             };
+
+//            ProcessUnit.log(received);
+
             new Thread(send).start();
-            System.out.println("Forward " + send.getIDAddress(received.destID));
+            System.out.println("Forward " + received.destID);
         }
     }
 

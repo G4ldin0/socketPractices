@@ -26,7 +26,7 @@ abstract class ProcessSendMessage implements Runnable {
         return buf;
     }
 
-    public void sendMessage(PacketInfo pInfo, InetAddress addr) throws IOException {
+    protected void sendMessage(PacketInfo pInfo, InetAddress addr) throws IOException {
         // Gera buffer com objeto serializado
         byte[] buf = generateBuffer(pInfo);
 

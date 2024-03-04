@@ -26,9 +26,14 @@ MenuItem{
     -fx-alignment: center;
 }
 
-Label{
+.Button{
     -fx-background-color: lightgray;
     -fx-border-width: 1;
     -fx-border-color: gray;
+}
 
+.MessageCell{
+    -fx-border-width: 0;
+    -fx-background-color: inherit;
+    -fx-border-color: transparent;
 }
