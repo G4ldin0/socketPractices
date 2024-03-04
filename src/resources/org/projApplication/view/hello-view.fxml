@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Scene stylesheets="@MainStyle.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.projApplication.controller.MainController">
+   <root>
+      <HBox>
+         <children>
+            <Pane id="ChatPane">
+               <children>
+                  <ScrollPane layoutX="10.0" layoutY="10.0" prefHeight="329.0" prefWidth="500.0">
+                     <content>
+                        <ListView fx:id="chatMessages" prefHeight="323.0" prefWidth="488.0" />
+                     </content>
+                  </ScrollPane>
+                  <AnchorPane layoutX="10.0" layoutY="340.0" prefHeight="44.0" prefWidth="470.0">
+                     <children>
+                        <ChoiceBox fx:id="typeMessage" layoutY="9.0" prefHeight="26.0" prefWidth="111.0" />
+                        <TextField fx:id="id" disable="true" layoutX="122.0" layoutY="9.0" minWidth="50.0" prefHeight="26.0" prefWidth="0.0" />
+                        <TextField fx:id="text" alignment="TOP_LEFT" layoutX="185.0" layoutY="9.0" maxWidth="1.7976931348623157E308" minWidth="100.0" onAction="#getValues" prefHeight="26.0" prefWidth="250.0" />
+                      <Button layoutX="441.0" layoutY="7.0" minWidth="53.0" mnemonicParsing="false" onAction="#getValues" prefHeight="30.0" prefWidth="53.0" text="&gt;" />
+                     </children>
+                  </AnchorPane>
+               </children>
+            </Pane>
+            <AnchorPane id="UserPane" prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </HBox>
+   </root>
+</Scene>

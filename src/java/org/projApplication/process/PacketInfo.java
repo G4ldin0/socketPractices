@@ -1,4 +1,5 @@
-import org.jetbrains.annotations.Contract;
+package org.projApplication.process;
+
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -20,7 +21,6 @@ public class PacketInfo implements Serializable {
          message = m;
      }
 
-    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof PacketInfo p)) return false;

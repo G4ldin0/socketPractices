@@ -1,14 +1,16 @@
+package org.projApplication.process;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Processo {
+public class ProcessUnit {
     static protected DatagramSocket socket;
     static protected byte ID;
     static protected Vector<Pair<Byte, InetAddress>> addresses;
 
     static protected Vector<PacketInfo> log;
-    public Processo(String addr, String[] neighbours) {
+    public ProcessUnit(String addr, String[] neighbours) {
         try {
             // Criação do socket
             InetAddress myAddr = InetAddress.getByName(addr);
@@ -45,7 +47,7 @@ public class Processo {
     }
 
     private void rodar() throws SocketException {
-        System.out.println("Processo " + ID + socket.getLocalAddress() + ":"+ socket.getLocalPort() + " conectado.");
+        System.out.println("org " + ID + socket.getLocalAddress() + ":"+ socket.getLocalPort() + " conectado.");
 
         // Criação das Threads
         ProcessReceiveMessage receiveThread = new ProcessReceiveMessage();

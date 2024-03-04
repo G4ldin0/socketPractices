@@ -1,3 +1,5 @@
+package org.projApplication.process;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -15,11 +17,11 @@ public class ProcessReceiveMessage implements Runnable {
     @Override
     public void run()
     {
-        while (!Processo.socket.isClosed())
+        while (!ProcessUnit.socket.isClosed())
         {
             try {
                 // Recebe pacote
-                Processo.socket.receive(packet);
+                ProcessUnit.socket.receive(packet);
 
                 // Deserializa objeto no buffer
                 ObjectInputStream objInput = new ObjectInputStream(new ByteArrayInputStream(packet.getData()));
@@ -52,7 +54,7 @@ public class ProcessReceiveMessage implements Runnable {
                         // Confere se a mensagem já foi recebida anteriormente
                         int count = 3;
                         boolean newMsg = true;
-                        var i = Processo.log.listIterator(Processo.log.size());
+                        var i = ProcessUnit.log.listIterator(ProcessUnit.log.size());
                         while (i.hasPrevious() && count-- >= 0 && newMsg) {
                             PacketInfo compare = i.previous();
                             newMsg = newMsg && !compare.equals(received);
@@ -60,11 +62,11 @@ public class ProcessReceiveMessage implements Runnable {
 
                         // Se não foi recebida, então passa o broadcast adiante
                         if(newMsg) {
-                            Processo.log(received);
+                            ProcessUnit.log(received);
                             InetAddress source = packet.getAddress();
 
                             // Envia mensagem para todos, exceto para onde foi recebida a mensagem
-                            for (var iterate = Processo.addresses.listIterator(Processo.addresses.size() - 1); iterate.hasPrevious(); ) {
+                            for (var iterate = ProcessUnit.addresses.listIterator(ProcessUnit.addresses.size() - 1); iterate.hasPrevious(); ) {
                                 var target = iterate.previous().r();
                                 if (!source.equals(target)) sendMessage(received, target);
                             }
@@ -82,20 +84,20 @@ public class ProcessReceiveMessage implements Runnable {
 
 
     private void multicastMessage(PacketInfo received) {
-        Processo.log(received);
+        ProcessUnit.log(received);
 
         System.out.println(packet.getAddress() + ":" + packet.getPort() + " $> "  + received.message);
     }
 
     private void unicastMessage(PacketInfo received) throws SocketException {
-        Processo.log(received);
+        ProcessUnit.log(received);
 
         // Se for um loop
-        if(received.source.equals( Processo.socket.getLocalAddress()) )
+        if(received.source.equals( ProcessUnit.socket.getLocalAddress()) )
             System.out.println(received.message);
 
         // Se for uma mensagem enviada para mim
-        else if(received.destID == Processo.ID)
+        else if(received.destID == ProcessUnit.ID)
             System.out.println(received.source + ":" + packet.getPort() + " .> " + received.message);
 
         // Se for uma mensagem para outro endereço

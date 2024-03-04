@@ -1,3 +1,5 @@
+package org.projApplication.process;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,7 +11,7 @@ abstract class ProcessSendMessage implements Runnable {
 
 //    DatagramSocket socket;
 
-//    public ProcessSendMessage() throws SocketException {socket = new DatagramSocket(Processo.socket.getLocalSocketAddress());}
+//    public Processo.ProcessSendMessage() throws SocketException {socket = new DatagramSocket(Processo.socket.getLocalSocketAddress());}
     private byte[] generateBuffer(PacketInfo p) throws IOException {
         // Serializa a classe e coloca no buffer
         ByteArrayOutputStream ObjBytes =  new ByteArrayOutputStream();
@@ -35,7 +37,7 @@ abstract class ProcessSendMessage implements Runnable {
                 5000
         );
 
-        Processo.socket.send(packet);
+        ProcessUnit.socket.send(packet);
     }
 
     public void sendMessage(PacketInfo pInfo) throws IOException {
@@ -48,13 +50,13 @@ abstract class ProcessSendMessage implements Runnable {
                 5000
         );
 
-        Processo.socket.send(packet);
+        ProcessUnit.socket.send(packet);
     }
 
     public InetAddress getIDAddress(byte id) {
         InetAddress rAddr = null;
 
-        for(var listEntry : Processo.addresses)
+        for(var listEntry : ProcessUnit.addresses)
         {
             // Faz comparação lógica do ID com os valores da tabela
             if( ( listEntry.l() & id ) != 0 ){
