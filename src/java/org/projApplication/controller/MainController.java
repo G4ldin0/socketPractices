@@ -34,8 +34,6 @@ public class MainController implements Initializable {
     @FXML
     ListView<PacketInfo> chatMessages;
 
-    @FXML
-    ObservableList<PacketInfo> teste;
     ProcessUnit instanceProcessUnit;
     private final String[] msgTypes = {"Unicast", "BroadCast"};
 

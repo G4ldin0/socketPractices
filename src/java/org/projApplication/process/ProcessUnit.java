@@ -14,10 +14,9 @@ public class ProcessUnit {
     static protected Vector<Pair<Byte, InetAddress>> addresses;
     static protected ObservableList<PacketInfo> log;
 
+
     static PipedInputStream input;
     static PipedOutputStream output;
-
-
     static protected ObjectInputStream getUserInput;
     static protected ObjectOutputStream userInput;
 
@@ -43,15 +42,12 @@ public class ProcessUnit {
             addresses.add(new Pair<>((byte)255, addresses.get(0).r()));
 
 
-
             log = FXCollections.observableArrayList();
 
 
-
+            // Criação de streams de informação entre Threads
             input = new PipedInputStream();
             output = new PipedOutputStream(input);
-
-
 
             userInput = new ObjectOutputStream(output);
 
@@ -67,25 +63,37 @@ public class ProcessUnit {
         socket.close();
     }
 
-    public static byte getID() { return ID; }
-    public static Vector<Pair<Byte, InetAddress>> getAddresses() { return addresses; }
-    public static InetAddress getAddress() { return socket.getLocalAddress();}
 
+    public static byte getID() {
+        return ID;
+    }
+    public static Vector<Pair<Byte, InetAddress>> getAddresses() {
+        return addresses;
+    }
+    public static InetAddress getAddress() {
+        return socket.getLocalAddress();
+    }
+    public static ObservableList<PacketInfo> log() {
+        return log;
+    }
+
+
+    // Log de mensagens reenviadas
     protected static void log(PacketInfo msg) {
         Platform.runLater(() -> log.add(msg) );
     }
 
-    public static ObservableList<PacketInfo> log() { return log; }
-
-    public static void sendMessage(PacketInfo pInfo){
+    // Log de mensagens recebidas da View
+    public static void sendMessage(PacketInfo msg){
         try {
-            userInput.writeObject(pInfo);
+            userInput.writeObject(msg);
             userInput.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        log.add(pInfo);
+        log.add(msg);
     }
+
 
     private void rodar() throws SocketException {
         System.out.println("org " + ID + socket.getLocalAddress() + ":"+ socket.getLocalPort() + " conectado.");

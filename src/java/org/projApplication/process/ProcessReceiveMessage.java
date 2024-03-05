@@ -14,6 +14,7 @@ public class ProcessReceiveMessage implements Runnable {
         packet = new DatagramPacket(new byte[4096], 4096);
     }
 
+
     @Override
     public void run()
     {
@@ -42,6 +43,7 @@ public class ProcessReceiveMessage implements Runnable {
         }
     }
 
+
     private void broadcastMessage(PacketInfo received) throws SocketException {
 
     new Thread(
@@ -62,11 +64,12 @@ public class ProcessReceiveMessage implements Runnable {
 
                         // Se não foi recebida, então passa o broadcast adiante
                         if(newMsg) {
+                            // Guarda nova mensagem no log
                             ProcessUnit.log(received);
 
-                            InetAddress source = packet.getAddress();
 
                             // Envia mensagem para todos, exceto para onde foi recebida a mensagem
+                            InetAddress source = packet.getAddress();
                             for (var iterate = ProcessUnit.addresses.listIterator(ProcessUnit.addresses.size() - 1); iterate.hasPrevious(); ) {
                                 var target = iterate.previous().r();
                                 if (!source.equals(target)) sendMessage(received, target);
@@ -82,14 +85,11 @@ public class ProcessReceiveMessage implements Runnable {
             }).start();
 
             }
-
-
     private void multicastMessage(PacketInfo received) {
         ProcessUnit.log(received);
 
         System.out.println(packet.getAddress() + ":" + packet.getPort() + " $> "  + received.message);
     }
-
     private void unicastMessage(PacketInfo received) throws SocketException {
 
         // Se for um loop
@@ -119,7 +119,7 @@ public class ProcessReceiveMessage implements Runnable {
 //            ProcessUnit.log(received);
 
             new Thread(send).start();
-            System.out.println("Forward " + received.destID);
+            System.out.println("Forward " + send.getIDAddress(received.destID));
         }
     }
 

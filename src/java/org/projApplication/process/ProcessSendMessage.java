@@ -8,10 +8,6 @@ import java.net.InetAddress;
 
 // Implementação de Thread que envia mensagens ao sistema
 abstract class ProcessSendMessage implements Runnable {
-
-//    DatagramSocket socket;
-
-//    public Processo.ProcessSendMessage() throws SocketException {socket = new DatagramSocket(Processo.socket.getLocalSocketAddress());}
     private byte[] generateBuffer(PacketInfo p) throws IOException {
         // Serializa a classe e coloca no buffer
         ByteArrayOutputStream ObjBytes =  new ByteArrayOutputStream();
